@@ -63,13 +63,13 @@ wheelMini.drawCircle(0, 0, (diameterWheelBase / 2) / 10);
 wheelMini.endFill();
 //добавляем круг на основу для колеса
 wheelBase.addChild(wheelMini);
-// Перемещение центрального круга в центр основы колеса и установка координат x и y в середину основы колеса.
-wheelMini.x = wheelBase.width / 2;
-wheelMini.y = wheelBase.height / 2;
-console.log("Координаты кнопки: " + container.x + " " + container.y);
-// точка поворота в центре основы колеса
-wheelMini.pivot.x = wheelMini.width / 2;
-wheelMini.pivot.y = wheelMini.height / 2;
+// // Перемещение центрального круга в центр основы колеса и установка координат x и y в середину основы колеса.
+// wheelMini.x = wheelBase.width / 2;
+// wheelMini.y = wheelBase.height / 2;
+// console.log("Координаты кнопки: " + container.x + " " + container.y);
+// // точка поворота в центре основы колеса
+// wheelMini.pivot.x = wheelMini.width / 2;
+// wheelMini.pivot.y = wheelMini.height / 2;
 
 // console.log(wheelChild.height);
 
@@ -87,9 +87,9 @@ lineSegment.endFill();
 wheelBase.addChild(lineSegment);
 
 
-// обработчик
-app.ticker.add((delta) =>
-{
-    // вращение контейнера
-    container.rotation -= 0.01 * delta;
-});
+// // обработчик
+// app.ticker.add((delta) =>
+// {
+//     // вращение контейнера
+//     container.rotation -= 0.01 * delta;
+// });
