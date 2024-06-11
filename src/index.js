@@ -51,30 +51,33 @@ wheelBase.y = containerMain.height / 2;
 console.log("Координаты основного колеса: " + wheelBase.x + " " + wheelBase.y);
 console.log("Размер основного колеса: " + wheelBase.width + " " + wheelBase.height);
 
+wheelBase.eventMode = 'static';
+wheelBase.cursor = 'pointer';
+wheelBase.on('pointerdown', onClick);
 
-let amountSegments = 4 // количество сегментов
+let amountSegments = 10 // количество сегментов
 let angelStep = (2 * Math.PI)/amountSegments //вычисляем угол сегментов в радианах (постоянная)
 
 for (let i = 0; i < amountSegments; i++)
 {
-    //линия, разделяющая сегменты
-    const lineSegment = new PIXI.Graphics();
+    //линия, разделяющая секторы
+    const sectorBorder = new PIXI.Graphics();
     // граница линии (толщина, цвет, прозрачность)
-    lineSegment.lineStyle(borderWheel, 0xfeeb77);
-    // умножаем угол с каждой итерацией (секментом) на величину угла между ними
+    sectorBorder.lineStyle(borderWheel, 0xfeeb77);
+    // умножаем угол с каждой итерацией (секторы) на величину угла между ними
     let angel = angelStep * i
     //координаты для того чтобы вычислить где будет точка на окружности колеса 
     let xLine = radiusWheelBase * Math.cos(angel)
     let yLine = radiusWheelBase * Math.sin(angel)
     // начало или конец линии 
-    lineSegment.moveTo(xLine, yLine);
+    sectorBorder.moveTo(xLine, yLine);
     // конец или начало линии (в середине колеса)
-    lineSegment.lineTo(0, 0);
+    sectorBorder.lineTo(0, 0);
     //заканчиваем заполнение
-    lineSegment.endFill();
+    sectorBorder.endFill();
 
     //добавляем линию на основу для колеса
-    wheelBase.addChild(lineSegment);
+    wheelBase.addChild(sectorBorder);
 }
 
 
@@ -97,9 +100,14 @@ containerMain.addChild(wheelButton);
 //добавляем контейнер на сцену
 app.stage.addChild(containerMain);
 
-// обработчик
-app.ticker.add((delta) =>
+
+function onClick()
 {
-    // вращение контейнера
-    containerMain.rotation += 0.01 * delta;
-});
+    console.log("Нажато");
+}
+// // обработчик
+// app.ticker.add((delta) =>
+// {
+//     // вращение контейнера
+//     containerMain.rotation += 0.01 * delta;
+// });
