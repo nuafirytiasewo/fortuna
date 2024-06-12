@@ -57,7 +57,9 @@ wheelBase.on('pointerdown', onClick);
 
 let amountSegments = 10 // количество сегментов
 let angelStep = (2 * Math.PI)/amountSegments //вычисляем угол сегментов в радианах (постоянная)
+let listOfSegmentsCoordinates = {} // создаем список координат для рисования каждого сектора
 
+//цикл для рисования линий, разделяющих сектора
 for (let i = 0; i < amountSegments; i++)
 {
     //линия, разделяющая секторы
@@ -69,10 +71,15 @@ for (let i = 0; i < amountSegments; i++)
     //координаты для того чтобы вычислить где будет точка на окружности колеса 
     let xLine = radiusWheelBase * Math.cos(angel)
     let yLine = radiusWheelBase * Math.sin(angel)
-    // начало или конец линии 
-    sectorBorder.moveTo(xLine, yLine);
-    // конец или начало линии (в середине колеса)
-    sectorBorder.lineTo(0, 0);
+    //записываем эти координаты для рисования сегментов
+    listOfSegmentsCoordinates[i] = {
+        "x" : xLine,
+        "y" : yLine
+    };
+    // начало линии (перемещение пера в эту точку - середину колеса)
+    sectorBorder.moveTo(0, 0);
+    // конец линии - куда дальше рисовать (к окружности колеса)
+    sectorBorder.lineTo(xLine, yLine);
     //заканчиваем заполнение
     sectorBorder.endFill();
 
@@ -80,6 +87,65 @@ for (let i = 0; i < amountSegments; i++)
     wheelBase.addChild(sectorBorder);
 }
 
+console.log(listOfSegmentsCoordinates); //вывод массива
+console.log(Object.keys(listOfSegmentsCoordinates).length); //найти длину массива
+console.log(listOfSegmentsCoordinates[4]["x"]); //вывели x координату одного из секторов
+
+//цикл для рисования секторов
+for (let i = 0; i < Object.keys(listOfSegmentsCoordinates).length; i++)
+{
+    //рисуем сектор
+    const sector = new PIXI.Graphics();
+
+    // граница сектора (толщина, цвет, прозрачность)
+    sector.lineStyle(borderWheel, 0xfeeb77);
+    sector.beginFill(0xff700b, 1);
+
+    // начало сектора (перемещение пера в эту точку - середину колеса)
+    sector.moveTo(0, 0);
+    
+    //проходимся по окружности и считаем крайние точки секторов:
+    //находим точку на окружности, к которой проведена линия 1 и сразу же находим точку к которой проведена линия 2,
+    //пока не найдем точку последней линии - следующей будет точка первой линии
+
+    let x1 = listOfSegmentsCoordinates[i]["x"];
+    let y1 = listOfSegmentsCoordinates[i]["y"];
+    //проводим линию к точке, к которой уже проведена линия 1
+    sector.lineTo(x1, y1);
+    //если мы не наткнулись на последнюю линию
+    if (i != Object.keys(listOfSegmentsCoordinates).length - 1)
+    {
+        // то ищем следующую точку, к которой проведена следующая линия
+        let x2 = listOfSegmentsCoordinates[i+1]["x"];
+        let y2 = listOfSegmentsCoordinates[i+1]["y"];
+        //вывод
+        console.log(x1 + "," + y1 + " and " + x2 + "," + y2);
+        // проводим к ней кривую линию 
+        sector.quadraticCurveTo(x1/x2, 0, x2, y2);
+        
+    }
+    //если мы наткнулись на последнюю линию
+    else 
+    {
+        // то ищем самую первую точку, к которой проведена линия 1
+        let x2 = listOfSegmentsCoordinates[0]["x"];
+        let y2 = listOfSegmentsCoordinates[0]["y"];
+        //вывод
+        console.log(x1 + "," + y1 + " and " + x2 + "," + y2);
+        // проводим к ней кривую линию 
+        sector.quadraticCurveTo(x1/x2, 0, x2, y2);
+    }
+
+    //обратно возвращаемся к центру колеса
+    sector.lineTo(0, 0);
+    //замыкаем фигуру
+    sector.closePath();
+    //заканчиваем заполнение
+    sector.endFill();
+    //добавляем линию на основу для колеса
+    wheelBase.addChild(sector);
+    
+}
 
 //круг в центре (кнопка)
 const wheelButton = new PIXI.Graphics();
@@ -105,9 +171,10 @@ function onClick()
 {
     console.log("Нажато");
 }
-// // обработчик
-// app.ticker.add((delta) =>
-// {
-//     // вращение контейнера
-//     containerMain.rotation += 0.01 * delta;
-// });
+
+// обработчик
+app.ticker.add((delta) =>
+{
+    // вращение контейнера
+    containerMain.rotation += 0.01 * delta;
+});
