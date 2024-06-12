@@ -58,6 +58,7 @@ wheelBase.on('pointerdown', onClick);
 let amountSegments = 10 // количество сегментов
 let angelStep = (2 * Math.PI)/amountSegments //вычисляем угол сегментов в радианах (постоянная)
 let listOfSegmentsCoordinates = {} // создаем список координат для рисования каждого сектора
+console.log("Пробегаемся по линиям (рисуем линии): ");
 
 //цикл для рисования линий, разделяющих сектора
 for (let i = 0; i < amountSegments; i++)
@@ -90,7 +91,7 @@ for (let i = 0; i < amountSegments; i++)
 console.log(listOfSegmentsCoordinates); //вывод массива
 console.log(Object.keys(listOfSegmentsCoordinates).length); //найти длину массива
 console.log(listOfSegmentsCoordinates[4]["x"]); //вывели x координату одного из секторов
-
+console.log("Пробегаемся по секторам (рисуем сектора): ");
 //цикл для рисования секторов
 for (let i = 0; i < Object.keys(listOfSegmentsCoordinates).length; i++)
 {
@@ -99,7 +100,9 @@ for (let i = 0; i < Object.keys(listOfSegmentsCoordinates).length; i++)
 
     // граница сектора (толщина, цвет, прозрачность)
     sector.lineStyle(borderWheel, 0xfeeb77);
-    sector.beginFill(0xff700b, 1);
+    //рандомный цвет
+    const randomColor = Math.floor(Math.random() * 16777215).toString(16).padStart(6, '0');
+    sector.beginFill("0x" + randomColor, 1);
 
     // начало сектора (перемещение пера в эту точку - середину колеса)
     sector.moveTo(0, 0);
@@ -119,9 +122,12 @@ for (let i = 0; i < Object.keys(listOfSegmentsCoordinates).length; i++)
         let x2 = listOfSegmentsCoordinates[i+1]["x"];
         let y2 = listOfSegmentsCoordinates[i+1]["y"];
         //вывод
-        console.log(x1 + "," + y1 + " and " + x2 + "," + y2);
+        console.log(" x1: " + x1 + "," + " y1: " + y1 + " and " + " x2: " + x2 + "," + " y1: " + y2);
+        // находим точку, к которой будет стремиться кривая Безье
+        let xB = x2 - (x2 - x1)/2;
+        let yB = y2 - (y2 - y1)/2;
         // проводим к ней кривую линию 
-        sector.quadraticCurveTo(x1/x2, 0, x2, y2);
+        sector.quadraticCurveTo(xB, yB, x2, y2);
         
     }
     //если мы наткнулись на последнюю линию
@@ -131,9 +137,12 @@ for (let i = 0; i < Object.keys(listOfSegmentsCoordinates).length; i++)
         let x2 = listOfSegmentsCoordinates[0]["x"];
         let y2 = listOfSegmentsCoordinates[0]["y"];
         //вывод
-        console.log(x1 + "," + y1 + " and " + x2 + "," + y2);
+        console.log(" x1: " + x1 + "," + " y1: " + y1 + " and " + " x2: " + x2 + "," + " y1: " + y2);
+        // находим точку, к которой будет стремиться кривая Безье
+        let xB = x2 - (x2 - x1)/2;
+        let yB = y2 - (y2 - y1)/2;
         // проводим к ней кривую линию 
-        sector.quadraticCurveTo(x1/x2, 0, x2, y2);
+        sector.quadraticCurveTo(xB, yB, x2, y2);
     }
 
     //обратно возвращаемся к центру колеса
@@ -172,9 +181,9 @@ function onClick()
     console.log("Нажато");
 }
 
-// обработчик
-app.ticker.add((delta) =>
-{
-    // вращение контейнера
-    containerMain.rotation += 0.01 * delta;
-});
+// // обработчик
+// app.ticker.add((delta) =>
+// {
+//     // вращение контейнера
+//     containerMain.rotation += 0.01 * delta;
+// });
