@@ -55,46 +55,13 @@ wheelBase.eventMode = 'static';
 wheelBase.cursor = 'pointer';
 wheelBase.on('pointerdown', onClick);
 
-let amountSegments = 10 // количество сегментов
-let angelStep = (2 * Math.PI)/amountSegments //вычисляем угол сегментов в радианах (постоянная)
+let amountSegments = 12 // количество сегментов
+let angleStep = (2 * Math.PI)/amountSegments //вычисляем угол сегментов в радианах (постоянная)
 let listOfSegmentsCoordinates = {} // создаем список координат для рисования каждого сектора
 console.log("Пробегаемся по линиям (рисуем линии): ");
 
-//цикл для рисования линий, разделяющих сектора
-for (let i = 0; i < amountSegments; i++)
-{
-    //линия, разделяющая секторы
-    const sectorBorder = new PIXI.Graphics();
-    // граница линии (толщина, цвет, прозрачность)
-    sectorBorder.lineStyle(borderWheel, 0xfeeb77);
-    // умножаем угол с каждой итерацией (секторы) на величину угла между ними
-    let angel = angelStep * i
-    //координаты для того чтобы вычислить где будет точка на окружности колеса 
-    let xLine = radiusWheelBase * Math.cos(angel)
-    let yLine = radiusWheelBase * Math.sin(angel)
-    //записываем эти координаты для рисования сегментов
-    listOfSegmentsCoordinates[i] = {
-        "x" : xLine,
-        "y" : yLine
-    };
-    // начало линии (перемещение пера в эту точку - середину колеса)
-    sectorBorder.moveTo(0, 0);
-    // конец линии - куда дальше рисовать (к окружности колеса)
-    sectorBorder.lineTo(xLine, yLine);
-    //заканчиваем заполнение
-    sectorBorder.endFill();
-
-    //добавляем линию на основу для колеса
-    wheelBase.addChild(sectorBorder);
-}
-
-console.log(listOfSegmentsCoordinates); //вывод массива
-console.log(Object.keys(listOfSegmentsCoordinates).length); //найти длину массива
-console.log(listOfSegmentsCoordinates[4]["x"]); //вывели x координату одного из секторов
-console.log("Пробегаемся по секторам (рисуем сектора): ");
-//цикл для рисования секторов
-for (let i = 0; i < Object.keys(listOfSegmentsCoordinates).length; i++)
-{
+// Цикл для рисования секторов
+for (let i = 0; i < amountSegments; i++) {
     //рисуем сектор
     const sector = new PIXI.Graphics();
 
@@ -104,47 +71,24 @@ for (let i = 0; i < Object.keys(listOfSegmentsCoordinates).length; i++)
     const randomColor = Math.floor(Math.random() * 16777215).toString(16).padStart(6, '0');
     sector.beginFill("0x" + randomColor, 1);
 
+    // Рассчитываем углы для текущего и следующего секторов
+    let startAngle = angleStep * i;
+    let endAngle = angleStep * (i + 1);
+
     // начало сектора (перемещение пера в эту точку - середину колеса)
     sector.moveTo(0, 0);
-    
-    //проходимся по окружности и считаем крайние точки секторов:
-    //находим точку на окружности, к которой проведена линия 1 и сразу же находим точку к которой проведена линия 2,
-    //пока не найдем точку последней линии - следующей будет точка первой линии
 
-    let x1 = listOfSegmentsCoordinates[i]["x"];
-    let y1 = listOfSegmentsCoordinates[i]["y"];
+    // Линия к первой точке на окружности
+    //координаты для того чтобы вычислить где будет точка на окружности колеса 
+    let x1 = radiusWheelBase * Math.cos(startAngle);
+    let y1 = radiusWheelBase * Math.sin(startAngle);
+
     //проводим линию к точке, к которой уже проведена линия 1
     sector.lineTo(x1, y1);
-    //если мы не наткнулись на последнюю линию
-    if (i != Object.keys(listOfSegmentsCoordinates).length - 1)
-    {
-        // то ищем следующую точку, к которой проведена следующая линия
-        let x2 = listOfSegmentsCoordinates[i+1]["x"];
-        let y2 = listOfSegmentsCoordinates[i+1]["y"];
-        //вывод
-        console.log(" x1: " + x1 + "," + " y1: " + y1 + " and " + " x2: " + x2 + "," + " y1: " + y2);
-        // находим точку, к которой будет стремиться кривая Безье
-        let xB = x2 - (x2 - x1)/2;
-        let yB = y2 - (y2 - y1)/2;
-        // проводим к ней кривую линию 
-        sector.quadraticCurveTo(xB, yB, x2, y2);
-        
-    }
-    //если мы наткнулись на последнюю линию
-    else 
-    {
-        // то ищем самую первую точку, к которой проведена линия 1
-        let x2 = listOfSegmentsCoordinates[0]["x"];
-        let y2 = listOfSegmentsCoordinates[0]["y"];
-        //вывод
-        console.log(" x1: " + x1 + "," + " y1: " + y1 + " and " + " x2: " + x2 + "," + " y1: " + y2);
-        // находим точку, к которой будет стремиться кривая Безье
-        let xB = x2 - (x2 - x1)/2;
-        let yB = y2 - (y2 - y1)/2;
-        // проводим к ней кривую линию 
-        sector.quadraticCurveTo(xB, yB, x2, y2);
-    }
 
+    // Дуга до следующей точки
+    sector.arc(0, 0, radiusWheelBase, startAngle, endAngle);
+    
     //обратно возвращаемся к центру колеса
     sector.lineTo(0, 0);
     //замыкаем фигуру
@@ -153,7 +97,7 @@ for (let i = 0; i < Object.keys(listOfSegmentsCoordinates).length; i++)
     sector.endFill();
     //добавляем линию на основу для колеса
     wheelBase.addChild(sector);
-    
+
 }
 
 //круг в центре (кнопка)
@@ -179,11 +123,11 @@ app.stage.addChild(containerMain);
 function onClick()
 {
     console.log("Нажато");
+    // обработчик
+    app.ticker.add((delta) =>
+    {
+        // вращение контейнера
+        containerMain.rotation += 0.01 * delta;
+    });
 }
 
-// // обработчик
-// app.ticker.add((delta) =>
-// {
-//     // вращение контейнера
-//     containerMain.rotation += 0.01 * delta;
-// });
