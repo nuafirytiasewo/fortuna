@@ -85,19 +85,34 @@ for (let i = 0; i < amountSegments; i++) {
 
     //проводим линию к точке, к которой уже проведена линия 1
     sector.lineTo(x1, y1);
-
     // Дуга до следующей точки
     sector.arc(0, 0, radiusWheelBase, startAngle, endAngle);
-    
     //обратно возвращаемся к центру колеса
     sector.lineTo(0, 0);
     //замыкаем фигуру
     sector.closePath();
     //заканчиваем заполнение
     sector.endFill();
-    //добавляем линию на основу для колеса
+    //добавляем сектор на основу для колеса
     wheelBase.addChild(sector);
+    
+    // средний угол для текущего сектора.
+    let middleAngle = (startAngle + endAngle) / 2;
+    // вычисляем координаты для того чтобы алмаз был в середине сектора
+    let diamondX = (radiusWheelBase / 2) * Math.cos(middleAngle);
+    let diamondY = (radiusWheelBase / 2) * Math.sin(middleAngle);
 
+    // загружаем текстуру для алмаза
+    const diamondTexture = PIXI.Texture.from('src/images/diamond.png');
+    // создаем спрайт для алмаза
+    const diamond = new PIXI.Sprite(diamondTexture);
+    // устанавливаем координаты для алмаза
+    diamond.x = diamondX;
+    diamond.y = diamondY;
+    // центр спрайта будет находиться в координатах (diamondX, diamondY).
+    diamond.anchor.set(0.5);
+    //добавляем сектор на основу для колеса
+    sector.addChild(diamond);
 }
 
 //круг в центре (кнопка)
@@ -107,7 +122,7 @@ wheelButton.lineStyle(0);
 // заполнение(цвет,прозрачность)
 wheelButton.beginFill(0xde3249, 1);
 //рисование круга(коорд x коорд y)
-wheelButton.drawCircle(0, 0, radiusWheelBase / 10);
+wheelButton.drawCircle(0, 0, radiusWheelBase / 8);
 //заканчиваем заполнение
 wheelButton.endFill();
 
@@ -127,7 +142,7 @@ function onClick()
     app.ticker.add((delta) =>
     {
         // вращение контейнера
-        containerMain.rotation += 0.01 * delta;
+        containerMain.rotation += 0.15 * delta;
     });
 }
 
