@@ -34,6 +34,26 @@ console.log("Диаметр основного колеса: " + diameterWheelBa
 const borderWheel = diameterWheelBase / 140;
 
 
+//текст (сколько алмазов выпадет)
+const textStyle = new PIXI.TextStyle({
+    fontFamily: 'Arial',
+    dropShadow: true,
+    dropShadowAlpha: 0.8,
+    dropShadowAngle: 2.1,
+    dropShadowBlur: 4,
+    dropShadowColor: '0x111111',
+    dropShadowDistance: 10,
+    fill: ['#ffffff'],
+    stroke: '#004620',
+    fontSize: 60,
+    fontWeight: 'lighter',
+    lineJoin: 'round',
+    strokeThickness: 12,
+});
+
+//скорость вращения
+const speedRotationWheel = 0.15;
+
 //основа для колеса
 const wheelBase = new PIXI.Graphics();
 // граница круга (толщина, цвет, прозрачность)
@@ -55,9 +75,9 @@ wheelBase.eventMode = 'static';
 wheelBase.cursor = 'pointer';
 wheelBase.on('pointerdown', onClick);
 
-let amountSegments = 12 // количество сегментов
+let amountSegments = 5 // количество сегментов
 let angleStep = (2 * Math.PI)/amountSegments //вычисляем угол сегментов в радианах (постоянная)
-let listOfSegmentsCoordinates = {} // создаем список координат для рисования каждого сектора
+
 console.log("Пробегаемся по линиям (рисуем линии): ");
 
 // Цикл для рисования секторов
@@ -111,8 +131,42 @@ for (let i = 0; i < amountSegments; i++) {
     diamond.y = diamondY;
     // центр спрайта будет находиться в координатах (diamondX, diamondY).
     diamond.anchor.set(0.5);
-    //добавляем сектор на основу для колеса
+    //чем больше сегментов, тем меньше алмаз и наоборот
+    // 0.4 - оптимальный коэффициент
+    const sizeDiamond = 0.4;
+    diamond.scale.x = 1 / (amountSegments * sizeDiamond);
+    diamond.scale.y = 1 / (amountSegments * sizeDiamond);
+    console.log("Размер алмаза " + diamond.scale.x + " " + diamond.scale.y);
+    // правильный наклон относительно секторов
+    diamond.rotation = middleAngle + Math.PI / 2;
+    //добавляем алмаз на сектор
     sector.addChild(diamond);
+    
+    // случайное значение от 0.01 до 100
+    let randomValue = Math.random() * (100 - 0.01) + 0.01;
+    // округление до двух знаков после запятой
+    randomValue = randomValue.toFixed(2);
+
+    //сколько будет алмазов на секторе
+    const amountDiamond = new PIXI.Text(randomValue, textStyle);
+
+    // вычисляем координаты текста чтобы были немного выше алмаза
+    // (r/5)*4 потому что мы смещаемся вверх на 4/5 
+    amountDiamond.x = (radiusWheelBase / 5 * 4) * Math.cos(middleAngle);
+    amountDiamond.y = (radiusWheelBase / 5 * 4) * Math.sin(middleAngle); // смещение текста вверх относительно алмаза
+
+    // центр спрайта будет находиться в координатах (amountDiamondX, amountDiamondY).
+    amountDiamond.anchor.set(0.5);
+    //чем больше сегментов, тем меньше алмаз и наоборот
+    // 0.3 - оптимальный коэффициент
+    const sizeAmountDiamond = 0.3;
+    amountDiamond.scale.x = 1 / (amountSegments * sizeAmountDiamond);
+    amountDiamond.scale.y = 1 / (amountSegments * sizeAmountDiamond);
+    console.log("Размер алмаза " + amountDiamond.scale.x + " " + amountDiamond.scale.y);
+    // правильный наклон относительно секторов
+    amountDiamond.rotation = middleAngle + Math.PI / 2;
+    //добавляем текст на сектор
+    sector.addChild(amountDiamond);
 }
 
 //круг в центре (кнопка)
@@ -126,23 +180,35 @@ wheelButton.drawCircle(0, 0, radiusWheelBase / 8);
 //заканчиваем заполнение
 wheelButton.endFill();
 
+// Перемещение контейнера в центр экрана и установка координат x и y контейнера в середину экрана приложения.
+wheelButton.x = app.screen.width / 2;
+wheelButton.y = app.screen.height / 2;
+
+//текст на кнопке
+const buttonText = new PIXI.Text("Старт", textStyle);
+buttonText.anchor.set(0.5);
+buttonText.scale.x = radiusWheelBase / 800;
+buttonText.scale.y = radiusWheelBase / 800;
+wheelButton.addChild(buttonText);
 
 //добавляем основу для колеса
 containerMain.addChild(wheelBase);
-//добавляем круг на основу для колеса
-containerMain.addChild(wheelButton);
+
 //добавляем контейнер на сцену
 app.stage.addChild(containerMain);
 
+//добавляем кнопку на сцену
+app.stage.addChild(wheelButton);
 
+//при нажатии на кнопку
 function onClick()
 {
-    console.log("Нажато");
+    console.log("Старт");
     // обработчик
     app.ticker.add((delta) =>
     {
         // вращение контейнера
-        containerMain.rotation += 0.15 * delta;
+        containerMain.rotation += speedRotationWheel * delta;
     });
 }
 
