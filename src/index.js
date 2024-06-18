@@ -24,9 +24,11 @@ console.log("Размеры окна: " + app.screen.width + " " + app.screen.he
 //вывод
 console.log("Координаты контейнера: " + containerMain.x + " " + containerMain.y);
 
+// загружаем текстуру для алмаза
+const diamondTexture = PIXI.Texture.from('src/images/diamond.png');
 
-//определяем диаметр колеса (ширина жкрана / 3)
-const diameterWheelBase = app.screen.width / 3;
+//определяем диаметр колеса (среднее арифметическое между высотой и шириной жкрана / 1.7)
+const diameterWheelBase = (app.screen.width / 1.7 + app.screen.height / 1.7) / 2;
 const radiusWheelBase = diameterWheelBase / 2;
 //вывод
 console.log("Диаметр основного колеса: " + diameterWheelBase);
@@ -122,8 +124,6 @@ for (let i = 0; i < amountSegments; i++) {
     let diamondX = (radiusWheelBase / 2) * Math.cos(middleAngle);
     let diamondY = (radiusWheelBase / 2) * Math.sin(middleAngle);
 
-    // загружаем текстуру для алмаза
-    const diamondTexture = PIXI.Texture.from('src/images/diamond.png');
     // создаем спрайт для алмаза
     const diamond = new PIXI.Sprite(diamondTexture);
     // устанавливаем координаты для алмаза
@@ -199,6 +199,30 @@ app.stage.addChild(containerMain);
 
 //добавляем кнопку на сцену
 app.stage.addChild(wheelButton);
+
+
+//сколько алмазов всего у пользователя
+const totalDiamonds = new PIXI.Text("100", textStyle);
+totalDiamonds.anchor.set(0.5);
+totalDiamonds.x = app.screen.width / 2;
+totalDiamonds.y = -app.screen.height / 130;
+totalDiamonds.scale.x = radiusWheelBase / 200;
+totalDiamonds.scale.y = radiusWheelBase / 200;
+//добавляем количество алмазов у пользователя на сцену
+app.stage.addChild(totalDiamonds);
+
+
+// создаем спрайт для алмаза
+const iconDiamond = new PIXI.Sprite(diamondTexture);
+// устанавливаем координаты для алмаза
+iconDiamond.x = app.screen.width / 2 + totalDiamonds.width;
+iconDiamond.y = -app.screen.height / 130;
+// центр спрайта будет находиться в координатах (diamondX, diamondY).
+iconDiamond.anchor.set(0.5);
+iconDiamond.scale.x = radiusWheelBase / 200;
+iconDiamond.scale.y = radiusWheelBase / 200;
+//добавляем алмаз на сцену
+app.stage.addChild(iconDiamond);
 
 //при нажатии на кнопку
 function onClick()
