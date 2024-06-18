@@ -204,10 +204,10 @@ app.stage.addChild(wheelButton);
 //сколько алмазов всего у пользователя
 const totalDiamonds = new PIXI.Text("100", textStyle);
 totalDiamonds.anchor.set(0.5);
-totalDiamonds.x = app.screen.width / 2;
-totalDiamonds.y = -app.screen.height / 130;
-totalDiamonds.scale.x = radiusWheelBase / 200;
-totalDiamonds.scale.y = radiusWheelBase / 200;
+totalDiamonds.x = app.screen.width / 2 + app.screen.width / 4;
+totalDiamonds.y = app.screen.height / 2 - app.screen.height / 4 - app.screen.height / 8;
+totalDiamonds.scale.x = radiusWheelBase / 400;
+totalDiamonds.scale.y = radiusWheelBase / 400;
 //добавляем количество алмазов у пользователя на сцену
 app.stage.addChild(totalDiamonds);
 
@@ -215,24 +215,35 @@ app.stage.addChild(totalDiamonds);
 // создаем спрайт для алмаза
 const iconDiamond = new PIXI.Sprite(diamondTexture);
 // устанавливаем координаты для алмаза
-iconDiamond.x = app.screen.width / 2 + totalDiamonds.width;
-iconDiamond.y = -app.screen.height / 130;
+iconDiamond.x = app.screen.width / 2 + app.screen.width / 4 + app.screen.width / 8;
+iconDiamond.y = app.screen.height / 2 - app.screen.height / 4 - app.screen.height / 8;
 // центр спрайта будет находиться в координатах (diamondX, diamondY).
 iconDiamond.anchor.set(0.5);
-iconDiamond.scale.x = radiusWheelBase / 200;
-iconDiamond.scale.y = radiusWheelBase / 200;
+iconDiamond.scale.x = radiusWheelBase / 400;
+iconDiamond.scale.y = radiusWheelBase / 400;
 //добавляем алмаз на сцену
 app.stage.addChild(iconDiamond);
 
 //при нажатии на кнопку
-function onClick()
-{
-    console.log("Старт");
-    // обработчик
-    app.ticker.add((delta) =>
-    {
-        // вращение контейнера
-        containerMain.rotation += speedRotationWheel * delta;
-    });
+var start = true;
+function onClick(){
+    if(start){
+        console.log("Старт");
+        // обработчик
+        app.ticker.add((delta) =>
+        {
+            // вращение контейнера
+            containerMain.rotation += speedRotationWheel * delta;
+            console.log(speedRotationWheel);
+        });
+    } else {
+        console.log("стоп");
+        // обработчик
+        app.ticker.add((delta) =>
+        {
+            // вращение контейнера
+            containerMain.rotation += speedRotationWheel * delta;
+        });
+    }
+    start = !start;
 }
-
