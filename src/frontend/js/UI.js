@@ -128,29 +128,36 @@ export class UI {
         }
     }
 
-    //метод calculateWinningSector вычисляет выигрышный сектор
+    // метод calculateWinningSector вычисляет выигрышный сектор
     calculateWinningSector() {
-        const currentRotation = this.wheel.container.rotation % (2 * Math.PI); //текущий угол вращения контейнера
-        const sectors = this.wheel.sectors; //массив секторов
-
-        //рассчитываем угол стрелки
-        const arrowAngle = -this.arrow.rotation + Math.PI / 2;
-        const targetAngle = (arrowAngle - currentRotation + 2 * Math.PI) % (2 * Math.PI);
-
-        //находим сектор, который соответствует углу стрелки
-        for (let sector of sectors) {
-            const sectorStartAngle = (sector.angleStep * sector.index + 2 * Math.PI) % (2 * Math.PI); //начальный угол сектора
-            const sectorEndAngle = (sector.angleStep * (sector.index + 1) + 2 * Math.PI) % (2 * Math.PI); //конечный угол сектора
-
-            if (targetAngle >= sectorStartAngle && targetAngle < sectorEndAngle) { //если угол стрелки попадает в сектор
-                const amountDiamonds = sector.getAmountDiamonds(); //получение количества алмазов в секторе
-                console.log("Вы выиграли " + amountDiamonds + " алмазов"); //вывод в консоль выигранных алмазов
-                this.totalDiamondsText.text = amountDiamonds; //обновление текста с количеством алмазов
-                return;
+        const currentRotation = (this.wheel.container.rotation + 2 * Math.PI) % (2 * Math.PI); //получаем текущий угол вращения колеса
+        const sectors = this.wheel.sectors; //получаем все секторы
+    
+        const arrowAngle = (-this.arrow.rotation + Math.PI / 2 + 2 * Math.PI) % (2 * Math.PI); //вычисляем угол стрелки
+        const targetAngle = (arrowAngle - currentRotation + 2 * Math.PI) % (2 * Math.PI); //вычисляем целевой угол, на котором остановится стрелка
+    
+        for (let sector of sectors) { //проходим по всем секторам
+            const sectorStartAngle = (sector.angleStep * sector.index + 2 * Math.PI) % (2 * Math.PI); //вычисляем начальный угол сектора
+            const sectorEndAngle = (sector.angleStep * (sector.index + 1) + 2 * Math.PI) % (2 * Math.PI); //вычисляем конечный угол сектора
+    
+            if (sectorEndAngle < sectorStartAngle) { //если сектор пересекает границу 0/2π
+                if (targetAngle >= sectorStartAngle || targetAngle < sectorEndAngle) { //если целевой угол попадает в этот сектор
+                    const amountDiamonds = sector.getAmountDiamonds(); //получаем количество алмазов для этого сектора
+                    console.log("Вы выиграли " + amountDiamonds + " алмазов"); //выводим количество выигранных алмазов
+                    this.totalDiamondsText.text = amountDiamonds; //обновляем текст с общим количеством алмазов
+                    return; //выходим из функции
+                }
+            } else { //если сектор не пересекает границу 0/2π
+                if (targetAngle >= sectorStartAngle && targetAngle < sectorEndAngle) { //если целевой угол попадает в этот сектор
+                    const amountDiamonds = sector.getAmountDiamonds(); //получаем количество алмазов для этого сектора
+                    console.log("Вы выиграли " + amountDiamonds + " алмазов"); //выводим количество выигранных алмазов
+                    this.totalDiamondsText.text = amountDiamonds; //обновляем текст с общим количеством алмазов
+                    return; //выходим из функции
+                }
             }
         }
-
-        console.log("Сектор не найден."); //вывод в консоль, если сектор не найден
+    
+        console.log("Сектор не найден."); //если ни один сектор не найден
     }
 
     //метод resetWheel сбрасывает состояние колеса
