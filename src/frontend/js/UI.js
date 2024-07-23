@@ -1,83 +1,169 @@
 import * as PIXI from 'pixi.js';
-import { TEXT_STYLE, SPEED_ROTATION_WHEEL, TEXT, BUTTON_TEXT, BUTTON_COLOR , DIAMOND_TEXTURE } from './constants';
+import { TEXT_STYLE, INITIAL_SPEED_ROTATION_WHEEL, MAX_SPEED_ROTATION_WHEEL, TEXT, BUTTON_TEXT_START, BUTTON_TEXT_STOP, BUTTON_COLOR, DIAMOND_TEXTURE, ARROW_COLOR, ARROW_SIZE } from './constants';
 
+//Класс UI отвечает за создание интерфейса пользователя
 export class UI {
+    //конструктор принимает приложение (app) и колесо (wheel) в качестве параметров
     constructor(app, wheel) {
-        this.app = app;
-        this.wheel = wheel;
-        this.speedRotationWheel = SPEED_ROTATION_WHEEL;
-        this.start = true;
+        this.app = app; //сохранение ссылки на приложение
+        this.wheel = wheel; //сохранение ссылки на колесо
+        this.speedRotationWheel = INITIAL_SPEED_ROTATION_WHEEL; //начальная скорость вращения колеса
+        this.maxSpeedRotationWheel = MAX_SPEED_ROTATION_WHEEL; //максимальная скорость вращения колеса
+        this.start = true; //флаг, указывающий на начальное состояние кнопки "Старт"
+        this.arrow = null; //указатель на графику стрелки
+        this.totalDiamondsText = null; //указатель на текстовое поле с общим количеством алмазов
+        this.isSpinning = false; //флаг, указывающий на то, что колесо крутится
+        this.isStopped = true; //флаг, указывающий на то, что колесо остановлено
+        this.deceleration = 0.98; //коэффициент замедления
+        this.acceleration = 1.05; //коэффициент ускорения
+
+        this.wheelButton = null; //указатель на кнопку
+        this.buttonText = null; //указатель на текст кнопки
     }
 
+    //метод create создает элементы интерфейса
     create() {
-        //круг в центре (кнопка)
-        const wheelButton = new PIXI.Graphics();
-        // граница круга (толщина, цвет, прозрачность)
-        wheelButton.lineStyle(0);
-        // заполнение(цвет,прозрачность)
-        wheelButton.beginFill(BUTTON_COLOR, 1);
-        //рисование круга(коорд x коорд y радиус)
-        wheelButton.drawCircle(0, 0, this.wheel.radiusWheelBase / 8);
-        //заканчиваем заполнение
-        wheelButton.endFill();
-        // Перемещение контейнера в центр экрана и установка координат x и y контейнера в середину экрана приложения.
-        wheelButton.x = this.app.screen.width / 2;
-        wheelButton.y = this.app.screen.height / 2;
+        //создание кнопки
+        this.wheelButton = new PIXI.Graphics();
+        this.wheelButton.lineStyle(0); //без обводки
+        this.wheelButton.beginFill(BUTTON_COLOR, 1); //заливка цветом BUTTON_COLOR
+        this.wheelButton.drawCircle(0, 0, this.wheel.radiusWheelBase / 8); //рисование круга
+        this.wheelButton.endFill();
+        this.wheelButton.x = this.app.screen.width / 2; //позиционирование по горизонтали
+        this.wheelButton.y = this.app.screen.height / 2; //позиционирование по вертикали
 
-        //текст на кнопке
-        const buttonText = new PIXI.Text(BUTTON_TEXT, TEXT_STYLE);
-        buttonText.anchor.set(0.5);
-        buttonText.scale.x = this.wheel.radiusWheelBase / 800;
-        buttonText.scale.y = this.wheel.radiusWheelBase / 800;
-        wheelButton.addChild(buttonText);
+        //создание текста кнопки
+        this.buttonText = new PIXI.Text(BUTTON_TEXT_START, TEXT_STYLE);
+        this.buttonText.anchor.set(0.5); //центрирование текста
+        this.buttonText.scale.x = this.wheel.radiusWheelBase / 800; //масштабирование текста по X
+        this.buttonText.scale.y = this.wheel.radiusWheelBase / 800; //масштабирование текста по Y
+        this.buttonText.x = 0; //позиционирование по горизонтали
+        this.buttonText.y = 0; //позиционирование по вертикали
 
-        //добавляем кнопку на сцену
-        this.app.stage.addChild(wheelButton);
+        this.wheelButton.addChild(this.buttonText); //добавление текста к кнопке
 
-        //обработка нажатий на кнопку
-        wheelButton.eventMode = 'static';
-        wheelButton.cursor = 'pointer';
-        wheelButton.on('pointerdown', this.onClick.bind(this));
+        this.app.stage.addChild(this.wheelButton); //добавление кнопки на сцену
+        this.wheelButton.interactive = true; //включение интерактивности
+        this.wheelButton.buttonMode = true; //режим кнопки
+        this.wheelButton.on('pointerdown', this.onClick.bind(this)); //добавление обработчика клика
 
-        //сколько алмазов всего у пользователя
-        const totalDiamonds = new PIXI.Text(TEXT, TEXT_STYLE);
-        totalDiamonds.anchor.set(0.5);
-        totalDiamonds.x = this.app.screen.width / 2 + this.app.screen.width / 4;
-        totalDiamonds.y = this.app.screen.height / 2 - this.app.screen.height / 4 - this.app.screen.height / 8;
-        totalDiamonds.scale.x = this.wheel.radiusWheelBase / 400;
-        totalDiamonds.scale.y = this.wheel.radiusWheelBase / 400;
-        //добавляем количество алмазов у пользователя на сцену
-        this.app.stage.addChild(totalDiamonds);
+        //создание текста с общим количеством алмазов
+        this.totalDiamondsText = new PIXI.Text(TEXT, TEXT_STYLE);
+        this.totalDiamondsText.anchor.set(0.5); //центрирование текста
+        this.totalDiamondsText.x = this.app.screen.width / 2 + this.app.screen.width / 4; //позиционирование по горизонтали
+        this.totalDiamondsText.y = this.app.screen.height / 2 - this.app.screen.height / 4 - this.app.screen.height / 8; //позиционирование по вертикали
+        this.totalDiamondsText.scale.x = this.wheel.radiusWheelBase / 400; //масштабирование текста по X
+        this.totalDiamondsText.scale.y = this.wheel.radiusWheelBase / 400; //масштабирование текста по Y
+        this.app.stage.addChild(this.totalDiamondsText); //добавление текста на сцену
         
-        // создаем спрайт для алмаза
+        //создание иконки алмаза
         const iconDiamond = new PIXI.Sprite(DIAMOND_TEXTURE);
-        // устанавливаем координаты для алмаза
-        iconDiamond.x = this.app.screen.width / 2 + this.app.screen.width / 4 + this.app.screen.width / 8;
-        iconDiamond.y = this.app.screen.height / 2 - this.app.screen.height / 4 - this.app.screen.height / 8;
-        // центр спрайта будет находиться в координатах (diamondX, diamondY)
-        iconDiamond.anchor.set(0.5);
-        iconDiamond.scale.x = this.wheel.radiusWheelBase / 400;
-        iconDiamond.scale.y = this.wheel.radiusWheelBase / 400;
-        //добавляем алмаз на сцену
-        this.app.stage.addChild(iconDiamond);
+        iconDiamond.x = this.app.screen.width / 2 + this.app.screen.width / 4 + this.app.screen.width / 8; //позиционирование по горизонтали
+        iconDiamond.y = this.app.screen.height / 2 - this.app.screen.height / 4 - this.app.screen.height / 8; //позиционирование по вертикали
+        iconDiamond.anchor.set(0.5); //центрирование иконки
+        iconDiamond.scale.x = this.wheel.radiusWheelBase / 400; //масштабирование иконки по X
+        iconDiamond.scale.y = this.wheel.radiusWheelBase / 400; //масштабирование иконки по Y
+        this.app.stage.addChild(iconDiamond); //добавление иконки на сцену
+
+        //создание стрелки
+        this.arrow = new PIXI.Graphics();
+        this.arrow.beginFill(ARROW_COLOR); //заливка цветом ARROW_COLOR
+        this.arrow.moveTo(-ARROW_SIZE, 0); //начало треугольника
+        this.arrow.lineTo(ARROW_SIZE, 0); //вторая точка треугольника
+        this.arrow.lineTo(0, -ARROW_SIZE * 2); //вершина треугольника
+        this.arrow.lineTo(-ARROW_SIZE, 0); //завершение треугольника
+        this.arrow.endFill();
+        this.arrow.x = this.app.screen.width / 2; //позиционирование по горизонтали
+        this.arrow.y = this.app.screen.height / 2 - this.wheel.radiusWheelBase; //позиционирование по вертикали
+        this.arrow.rotation = Math.PI; //поворот стрелки
+        this.app.stage.addChild(this.arrow); //добавление стрелки на сцену
     }
 
-    //при нажатии на кнопку
+    //метод onClick обрабатывает нажатие кнопки
     onClick() {
-        if (this.start) {
-            // обработчик
-            this.app.ticker.add((delta) => {
-                // вращение контейнера
-                this.wheel.container.rotation += this.speedRotationWheel * delta;
-            });
-        } else {
-            this.app.ticker.add((delta) => {
-                this.wheel.container.rotation += this.speedRotationWheel * delta;
-            });
+        if (this.isStopped && this.start) { //если колесо остановлено и кнопка в состоянии "Старт"
+            this.app.ticker.add(this.accelerateWheel, this); //добавление функции ускорения к тикеру
+            this.isSpinning = true; //установка флага вращения
+            this.isStopped = false; //установка флага, что колесо не остановлено
+            this.buttonText.text = BUTTON_TEXT_STOP; //изменение текста кнопки на "Стоп"
+            this.start = false; //изменение состояния кнопки
+        } else if (this.isSpinning && !this.start) { //если колесо вращается и кнопка в состоянии "Стоп"
+            this.isSpinning = false; //остановка вращения
+            this.buttonText.text = BUTTON_TEXT_START; //изменение текста кнопки на "Старт"
+            this.start = true; //изменение состояния кнопки
+            this.app.ticker.add(this.decelerateWheel, this); //добавление функции замедления к тикеру
         }
-        this.start = !this.start;
     }
 
+    //метод accelerateWheel отвечает за ускорение колеса
+    accelerateWheel(delta) {
+        if (this.isSpinning) { //если колесо вращается
+            this.speedRotationWheel = Math.min(this.speedRotationWheel * this.acceleration, this.maxSpeedRotationWheel); //увеличение скорости вращения с учетом максимальной скорости
+            this.wheel.container.rotation += this.speedRotationWheel * delta; //вращение контейнера колеса
+
+            if (this.speedRotationWheel >= this.maxSpeedRotationWheel) { //если достигнута максимальная скорость
+                this.app.ticker.remove(this.accelerateWheel, this); //удаление функции ускорения из тикера
+                this.app.ticker.add(this.rotateWheel, this); //добавление функции постоянного вращения к тикеру
+            }
+        }
+    }
+
+    //метод rotateWheel отвечает за постоянное вращение колеса
+    rotateWheel(delta) {
+        if (this.isSpinning) { //если колесо вращается
+            this.wheel.container.rotation += this.speedRotationWheel * delta; //вращение контейнера колеса
+        }
+    }
+
+    //метод decelerateWheel отвечает за замедление колеса
+    decelerateWheel(delta) {
+        this.speedRotationWheel *= this.deceleration; //уменьшение скорости вращения
+        this.wheel.container.rotation += this.speedRotationWheel * delta; //вращение контейнера колеса
+
+        if (Math.abs(this.speedRotationWheel) < 0.001) { //если скорость практически нулевая
+            this.speedRotationWheel = 0; //установка скорости в 0
+            this.app.ticker.remove(this.decelerateWheel, this); //удаление функции замедления из тикера
+            this.calculateWinningSector(); //вычисление выигрышного сектора
+            this.resetWheel(); //сброс состояния колеса
+        }
+    }
+
+    //метод calculateWinningSector вычисляет выигрышный сектор
+    calculateWinningSector() {
+        const currentRotation = this.wheel.container.rotation % (2 * Math.PI); //текущий угол вращения контейнера
+        const sectors = this.wheel.sectors; //массив секторов
+
+        //рассчитываем угол стрелки
+        const arrowAngle = -this.arrow.rotation + Math.PI / 2;
+        const targetAngle = (arrowAngle - currentRotation + 2 * Math.PI) % (2 * Math.PI);
+
+        //находим сектор, который соответствует углу стрелки
+        for (let sector of sectors) {
+            const sectorStartAngle = (sector.angleStep * sector.index + 2 * Math.PI) % (2 * Math.PI); //начальный угол сектора
+            const sectorEndAngle = (sector.angleStep * (sector.index + 1) + 2 * Math.PI) % (2 * Math.PI); //конечный угол сектора
+
+            if (targetAngle >= sectorStartAngle && targetAngle < sectorEndAngle) { //если угол стрелки попадает в сектор
+                const amountDiamonds = sector.getAmountDiamonds(); //получение количества алмазов в секторе
+                console.log("Вы выиграли " + amountDiamonds + " алмазов"); //вывод в консоль выигранных алмазов
+                this.totalDiamondsText.text = amountDiamonds; //обновление текста с количеством алмазов
+                return;
+            }
+        }
+
+        console.log("Сектор не найден."); //вывод в консоль, если сектор не найден
+    }
+
+    //метод resetWheel сбрасывает состояние колеса
+    resetWheel() {
+        this.start = true; //установка состояния кнопки в "Старт"
+        this.isStopped = true; //установка флага остановки колеса
+        this.buttonText.text = BUTTON_TEXT_START; //изменение текста кнопки на "Старт"
+        this.isSpinning = false; //установка флага, что колесо не вращается
+        this.speedRotationWheel = INITIAL_SPEED_ROTATION_WHEEL; //сброс скорости вращения к начальной
+        this.app.ticker.remove(this.rotateWheel, this); //удаление функции постоянного вращения из тикера
+    }
+
+    //метод getTextStyle возвращает стиль текста
     getTextStyle() {
         return TEXT_STYLE;
     }

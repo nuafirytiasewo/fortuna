@@ -1,15 +1,19 @@
 import * as PIXI from 'pixi.js';
-import { BORDER_COLOR, DIAMOND_TEXTURE , AMOUNT_SECTORS , TEXT_STYLE , SIZE_DIAMOND_COEFF , SIZE_AMOUNT_DIAMOND_COEFF} from './constants';
+import { BORDER_COLOR, DIAMOND_TEXTURE, AMOUNT_SECTORS, TEXT_STYLE, SIZE_DIAMOND_COEFF, SIZE_AMOUNT_DIAMOND_COEFF } from './constants'; // импорт констант из файла constants
 
+// Класс Sector отвечает за создание и управление отдельным сектором колеса
 export class Sector {
+    // конструктор принимает ширину границы колеса, радиус колеса, угловой шаг и индекс сектора в качестве параметров
     constructor(borderWheel, radiusWheelBase, angleStep, index) {
-        this.borderWheel = borderWheel;
-        this.radiusWheelBase = radiusWheelBase;
-        this.angleStep = angleStep;
-        this.index = index;
-        this.sector = new PIXI.Graphics();
+        this.borderWheel = borderWheel; // сохранение ширины границы колеса
+        this.radiusWheelBase = radiusWheelBase; // сохранение радиуса колеса
+        this.angleStep = angleStep; // сохранение углового шага
+        this.index = index; // сохранение индекса сектора
+        this.sector = new PIXI.Graphics(); // создание графического объекта для сектора
+        this.amountDiamonds = (Math.random() * (100 - 0.01) + 0.01).toFixed(2); // случайное количество алмазов в секторе
     }
 
+    // метод create создает графическое представление сектора
     create() {
         // граница сектора (толщина, цвет, прозрачность)
         this.sector.lineStyle(this.borderWheel, BORDER_COLOR);
@@ -70,8 +74,8 @@ export class Sector {
         this.sector.addChild(diamond);
     }
 
-    //добавление алмаза на сектор
-    addText(startAngle, endAngle) {
+   //добавление алмаза на сектор
+   addText(startAngle, endAngle) {
         // средний угол для текущего сектора
         let middleAngle = (startAngle + endAngle) / 2;
         // случайное значение от 0.01 до 100
@@ -80,7 +84,7 @@ export class Sector {
         randomValue = randomValue.toFixed(2);
 
         //сколько будет алмазов на секторе
-        const amountDiamond = new PIXI.Text(randomValue, TEXT_STYLE);
+        const amountDiamond = new PIXI.Text(this.amountDiamonds, TEXT_STYLE); // создание текста с количеством алмазов
         // вычисляем координаты текста чтобы были немного выше алмаза
         // (r/5)*4 потому что мы смещаемся вверх на 4/5 
         amountDiamond.x = (this.radiusWheelBase / 5 * 4) * Math.cos(middleAngle);
@@ -95,5 +99,10 @@ export class Sector {
         amountDiamond.rotation = middleAngle + Math.PI / 2;
         //добавляем текст на сектор
         this.sector.addChild(amountDiamond);
+    }
+
+    // метод getAmountDiamonds возвращает количество алмазов в секторе
+    getAmountDiamonds() {
+        return this.amountDiamonds;
     }
 }
