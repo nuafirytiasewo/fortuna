@@ -10,7 +10,7 @@ export class Sector {
         this.angleStep = angleStep; // сохранение углового шага
         this.index = index; // сохранение индекса сектора
         this.sector = new PIXI.Graphics(); // создание графического объекта для сектора
-        this.amountDiamonds = (Math.random() * (100 - 0.01) + 0.01).toFixed(2); // случайное количество алмазов в секторе
+        this.amountDiamonds = Math.floor(Math.random() * (100 - 1) + 1); // случайное целое количество алмазов в секторе
     }
 
     // метод create создает графическое представление сектора
@@ -78,10 +78,6 @@ export class Sector {
    addText(startAngle, endAngle) {
         // средний угол для текущего сектора
         let middleAngle = (startAngle + endAngle) / 2;
-        // случайное значение от 0.01 до 100
-        let randomValue = Math.random() * (100 - 0.01) + 0.01;
-        // округление до двух знаков после запятой
-        randomValue = randomValue.toFixed(2);
 
         //сколько будет алмазов на секторе
         const amountDiamond = new PIXI.Text(this.amountDiamonds, TEXT_STYLE); // создание текста с количеством алмазов

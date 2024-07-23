@@ -7,10 +7,11 @@ export class UI {
     constructor(app, wheel) {
         this.app = app; //сохранение ссылки на приложение
         this.wheel = wheel; //сохранение ссылки на колесо
-        this.speedRotationWheel = INITIAL_SPEED_ROTATION_WHEEL; //начальная скорость вращения колеса
-        this.maxSpeedRotationWheel = MAX_SPEED_ROTATION_WHEEL; //максимальная скорость вращения колеса
+        this.speedRotationWheel = Math.random() * (0.15 - INITIAL_SPEED_ROTATION_WHEEL) + INITIAL_SPEED_ROTATION_WHEEL; //начальная скорость вращения колеса
+        this.maxSpeedRotationWheel = Math.random() * (0.9 - MAX_SPEED_ROTATION_WHEEL) + MAX_SPEED_ROTATION_WHEEL; //максимальная скорость вращения колеса
         this.start = true; //флаг, указывающий на начальное состояние кнопки "Старт"
         this.arrow = null; //указатель на графику стрелки
+        this.totalDiamonds = 100; //начальное количество алмазов
         this.totalDiamondsText = null; //указатель на текстовое поле с общим количеством алмазов
         this.isSpinning = false; //флаг, указывающий на то, что колесо крутится
         this.isStopped = true; //флаг, указывающий на то, что колесо остановлено
@@ -48,7 +49,7 @@ export class UI {
         this.wheelButton.on('pointerdown', this.onClick.bind(this)); //добавление обработчика клика
 
         //создание текста с общим количеством алмазов
-        this.totalDiamondsText = new PIXI.Text(TEXT, TEXT_STYLE);
+        this.totalDiamondsText = new PIXI.Text(this.totalDiamonds, TEXT_STYLE);
         this.totalDiamondsText.anchor.set(0.5); //центрирование текста
         this.totalDiamondsText.x = this.app.screen.width / 2 + this.app.screen.width / 4; //позиционирование по горизонтали
         this.totalDiamondsText.y = this.app.screen.height / 2 - this.app.screen.height / 4 - this.app.screen.height / 8; //позиционирование по вертикали
@@ -82,11 +83,17 @@ export class UI {
     //метод onClick обрабатывает нажатие кнопки
     onClick() {
         if (this.isStopped && this.start) { //если колесо остановлено и кнопка в состоянии "Старт"
-            this.app.ticker.add(this.accelerateWheel, this); //добавление функции ускорения к тикеру
-            this.isSpinning = true; //установка флага вращения
-            this.isStopped = false; //установка флага, что колесо не остановлено
-            this.buttonText.text = BUTTON_TEXT_STOP; //изменение текста кнопки на "Стоп"
-            this.start = false; //изменение состояния кнопки
+            if (this.totalDiamonds >= 50) { //проверяем, достаточно ли алмазов для вращения
+                this.totalDiamonds -= 50; //списываем 50 алмазов
+                this.totalDiamondsText.text = this.totalDiamonds; //обновляем текст с общим количеством алмазов
+                this.app.ticker.add(this.accelerateWheel, this); //добавление функции ускорения к тикеру
+                this.isSpinning = true; //установка флага вращения
+                this.isStopped = false; //установка флага, что колесо не остановлено
+                this.buttonText.text = BUTTON_TEXT_STOP; //изменение текста кнопки на "Стоп"
+                this.start = false; //изменение состояния кнопки
+            } else {
+                console.log("Недостаточно алмазов для вращения."); //сообщаем, если недостаточно алмазов
+            }
         } else if (this.isSpinning && !this.start) { //если колесо вращается и кнопка в состоянии "Стоп"
             this.isSpinning = false; //остановка вращения
             this.buttonText.text = BUTTON_TEXT_START; //изменение текста кнопки на "Старт"
@@ -144,14 +151,16 @@ export class UI {
                 if (targetAngle >= sectorStartAngle || targetAngle < sectorEndAngle) { //если целевой угол попадает в этот сектор
                     const amountDiamonds = sector.getAmountDiamonds(); //получаем количество алмазов для этого сектора
                     console.log("Вы выиграли " + amountDiamonds + " алмазов"); //выводим количество выигранных алмазов
-                    this.totalDiamondsText.text = amountDiamonds; //обновляем текст с общим количеством алмазов
+                    this.totalDiamonds += parseInt(amountDiamonds); //добавляем выигранные алмазы к общему количеству
+                    this.totalDiamondsText.text = this.totalDiamonds; //обновляем текст с общим количеством алмазов
                     return; //выходим из функции
                 }
             } else { //если сектор не пересекает границу 0/2π
                 if (targetAngle >= sectorStartAngle && targetAngle < sectorEndAngle) { //если целевой угол попадает в этот сектор
                     const amountDiamonds = sector.getAmountDiamonds(); //получаем количество алмазов для этого сектора
                     console.log("Вы выиграли " + amountDiamonds + " алмазов"); //выводим количество выигранных алмазов
-                    this.totalDiamondsText.text = amountDiamonds; //обновляем текст с общим количеством алмазов
+                    this.totalDiamonds += parseInt(amountDiamonds); //добавляем выигранные алмазы к общему количеству
+                    this.totalDiamondsText.text = this.totalDiamonds; //обновляем текст с общим количеством алмазов
                     return; //выходим из функции
                 }
             }
