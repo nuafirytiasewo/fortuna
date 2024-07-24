@@ -33,6 +33,13 @@ export const WHEEL_FILL_COLOR = 0x650a5a;
 //сколько всего алмазов у пользователя
 export const TEXT = "100";
 //текст по умолчанию на кнопке
-export const BUTTON_TEXT = "Старт";
+export const BUTTON_TEXT_START = "Старт";
+export const BUTTON_TEXT_STOP = "Стоп";
 // загружаем текстуру для алмаза
 export const DIAMOND_TEXTURE = PIXI.Texture.from('src/frontend/images/diamond.png');
+// Цвет стрелки
+export const ARROW_COLOR = 0xff0000;
+// Размер стрелки
+export const ARROW_SIZE = 40;
+export const INITIAL_SPEED_ROTATION_WHEEL = 0.1; //начальное значение скорости вращения колеса
+export const MAX_SPEED_ROTATION_WHEEL = 0.5;     //максимальное значение скорости вращения колеса
