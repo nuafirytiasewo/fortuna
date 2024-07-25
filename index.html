@@ -5,8 +5,20 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Колесо Фортуны</title>
     <style>
-        body {
-            margin: 0px; /* убираем белые рамки */
+        html, body {
+            overflow: hidden; /* Скрываем горизонтальный и вертикальный скроллбары */
+            width: 100%;      /* Устанавливаем ширину на 100% */
+            height: 100%;     /* Устанавливаем высоту на 100% */
+            margin: 0;        /* Убираем внешние отступы */
+            padding: 0;       /* Убираем внутренние отступы */
+            display: flex;    /* Используем flexbox для центрирования */
+            justify-content: center; /* Горизонтальное центрирование */
+            align-items: center; /* Вертикальное центрирование */
+            background-color: black; /* Устанавливаем фон для всего экрана */
+        }
+        canvas {
+            max-width: 100%; /* Максимальная ширина canvas */
+            max-height: 100%; /* Максимальная высота canvas */
         }
     </style>
 </head>
